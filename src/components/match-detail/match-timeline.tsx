@@ -31,7 +31,7 @@ export function MatchTimeline({ events }: { events: MatchEvent[] }) {
           <p>Match events will appear here as the action unfolds.</p>
         </div>
       ) : (
-        <ol className="timeline-list">
+        <ol className="timeline-list" aria-live="polite" aria-relevant="additions">
           {orderedEvents.map((event) => {
             const meta = eventMeta[event.type];
             return (

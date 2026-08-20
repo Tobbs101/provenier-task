@@ -1,4 +1,4 @@
-import type { MatchEvent, MatchStatistics, MatchStatus } from "@/types/match";
+import type { MatchEventType, MatchStatistics, MatchStatus } from "@/types/match";
 
 export interface ScoreUpdate {
   matchId: string;
@@ -15,6 +15,18 @@ export interface StatusChange {
 export interface StatsUpdate {
   matchId: string;
   statistics: MatchStatistics;
+}
+
+export interface MatchEventUpdate {
+  matchId: string;
+  id?: string;
+  type: MatchEventType;
+  minute: number;
+  team: "home" | "away";
+  player?: string;
+  assistPlayer?: string;
+  description: string;
+  timestamp?: string;
 }
 
 export interface ChatMessage {
@@ -45,7 +57,7 @@ export interface SocketError {
 
 export interface ServerToClientEvents {
   score_update: (payload: ScoreUpdate) => void;
-  match_event: (payload: MatchEvent & { matchId: string }) => void;
+  match_event: (payload: MatchEventUpdate) => void;
   stats_update: (payload: StatsUpdate) => void;
   status_change: (payload: StatusChange) => void;
   chat_message: (payload: ChatMessage) => void;
