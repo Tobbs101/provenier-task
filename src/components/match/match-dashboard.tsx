@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import gsap from "gsap";
 
 import { MatchCard } from "@/components/match/match-card";
 import { useMatches } from "@/hooks/use-matches";
@@ -11,6 +12,7 @@ import {
   sortMatches,
   type MatchFilter,
 } from "@/lib/matches/presentation";
+import { prefersReducedMotion } from "@/lib/motion/preferences";
 
 const filters: { value: MatchFilter; label: string }[] = [
   { value: "all", label: "All" },
@@ -20,6 +22,7 @@ const filters: { value: MatchFilter; label: string }[] = [
 ];
 
 export function MatchDashboard() {
+  const root = useRef<HTMLElement | null>(null);
   const { matches, status, error, retry } = useMatches();
   const [activeFilter, setActiveFilter] = useState<MatchFilter>("all");
   const sortedMatches = useMemo(() => sortMatches(matches), [matches]);
@@ -29,13 +32,52 @@ export function MatchDashboard() {
   );
   const liveMatches = sortedMatches.filter(isLiveMatch);
   const previewMatches = (liveMatches.length > 0 ? liveMatches : sortedMatches).slice(0, 3);
+  const visibleMatchIds = visibleMatches.map(({ id }) => id).join(",");
+
+  useEffect(() => {
+    if (!root.current || prefersReducedMotion()) return;
+
+    const context = gsap.context(() => {
+      const timeline = gsap.timeline({ defaults: { ease: "power3.out" } });
+      timeline
+        .fromTo(".hero-copy > *", { autoAlpha: 0, y: 24 }, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.65,
+          stagger: 0.08,
+        })
+        .fromTo(".score-preview", { autoAlpha: 0, x: 28 }, {
+          autoAlpha: 1,
+          x: 0,
+          duration: 0.75,
+        }, "-=0.48");
+    }, root);
+
+    return () => context.revert();
+  }, []);
+
+  useEffect(() => {
+    if (status !== "success" || !root.current || prefersReducedMotion()) return;
+
+    const context = gsap.context(() => {
+      gsap.fromTo(".match-grid .match-card", { autoAlpha: 0, y: 18 }, {
+        autoAlpha: 1,
+        y: 0,
+        duration: 0.45,
+        stagger: 0.06,
+        ease: "power2.out",
+      });
+    }, root);
+
+    return () => context.revert();
+  }, [activeFilter, status, visibleMatchIds]);
 
   function getFilterCount(filter: MatchFilter) {
     return filterMatches(matches, filter).length;
   }
 
   return (
-    <main id="main-content">
+    <main id="main-content" ref={root}>
       <section className="hero-shell">
         <div className="page-container hero-grid">
           <div className="hero-copy">

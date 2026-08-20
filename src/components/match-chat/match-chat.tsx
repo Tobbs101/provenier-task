@@ -1,9 +1,11 @@
 "use client";
 
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import gsap from "gsap";
 
 import { useChatIdentity } from "@/hooks/use-chat-identity";
 import { useMatchChat } from "@/hooks/use-match-chat";
+import { prefersReducedMotion } from "@/lib/motion/preferences";
 import type { ChatMessage } from "@/types/socket";
 
 const MAX_MESSAGE_LENGTH = 500;
@@ -11,6 +13,7 @@ const MAX_USERNAME_LENGTH = 24;
 const MIN_USERNAME_LENGTH = 2;
 
 export function MatchChat({ matchId }: { matchId: string }) {
+  const panel = useRef<HTMLElement | null>(null);
   const { identity, saveUsername } = useChatIdentity();
   const chat = useMatchChat({ matchId, identity });
   const [draft, setDraft] = useState("");
@@ -19,6 +22,30 @@ export function MatchChat({ matchId }: { matchId: string }) {
   const [isEditingIdentity, setIsEditingIdentity] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(true);
   const messagesEnd = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!panel.current || prefersReducedMotion()) return;
+
+    const context = gsap.context(() => {
+      gsap.fromTo(panel.current, { y: 8, scale: 0.985 }, {
+        y: 0,
+        scale: 1,
+        duration: 0.28,
+        ease: "power2.out",
+      });
+
+      if (!isCollapsed) {
+        gsap.fromTo(".chat-panel-body", { autoAlpha: 0, y: 8 }, {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.32,
+          ease: "power2.out",
+        });
+      }
+    }, panel);
+
+    return () => context.revert();
+  }, [isCollapsed]);
 
   useEffect(() => {
     messagesEnd.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -61,6 +88,7 @@ export function MatchChat({ matchId }: { matchId: string }) {
     <section
       className={`detail-panel chat-panel${isCollapsed ? " chat-panel--collapsed" : ""}`}
       aria-labelledby="chat-heading"
+      ref={panel}
     >
       <div className="panel-heading chat-heading">
         <div>

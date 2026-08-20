@@ -533,6 +533,35 @@ a:focus-visible {
   background: var(--brand-yellow);
 }
 
+.match-card--live {
+  border-color: color-mix(in srgb, var(--brand-yellow) 38%, var(--border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--brand-yellow) 6%, var(--surface)),
+    var(--surface) 48%
+  );
+}
+
+.match-card--live::after {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--brand-yellow) 35%,
+    var(--live) 50%,
+    var(--brand-yellow) 65%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  content: "";
+  animation: live-signal-rail 2.2s linear infinite;
+}
+
 .match-card:hover {
   border-color: color-mix(in srgb, var(--foreground) 38%, var(--border));
   box-shadow: 0 0.8rem 2.5rem color-mix(in srgb, #000 10%, transparent);
@@ -563,6 +592,19 @@ a:focus-visible {
 
 .status-badge--live {
   color: var(--live);
+}
+
+.match-card--live .status-badge .live-dot {
+  animation: live-dot-pulse 1.1s ease-in-out infinite alternate;
+}
+
+.live-word {
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.live-separator {
+  color: var(--muted);
 }
 
 .match-clock {
@@ -698,6 +740,43 @@ a:focus-visible {
   opacity: 0.65;
   transform: translate(-50%, -38%);
   pointer-events: none;
+}
+
+.detail-scoreboard--live {
+  background: radial-gradient(
+      circle at 50% 65%,
+      color-mix(in srgb, var(--brand-yellow) 9%, transparent),
+      transparent 42%
+    ),
+    var(--surface);
+}
+
+.detail-scoreboard--live::after {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  right: 0;
+  left: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--brand-yellow) 35%,
+    var(--live) 50%,
+    var(--brand-yellow) 65%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  content: "";
+  animation: live-signal-rail 2.2s linear infinite;
+}
+
+.detail-scoreboard--live .status-badge .live-dot {
+  animation: live-dot-pulse 1.1s ease-in-out infinite alternate;
+}
+
+.detail-scoreboard--live .score-block {
+  filter: drop-shadow(0 0 1.5rem color-mix(in srgb, var(--brand-yellow) 16%, transparent));
 }
 
 .scoreboard-nav {
@@ -1456,6 +1535,22 @@ a:focus-visible {
 @keyframes connection-pulse {
   from { opacity: 0.35; }
   to { opacity: 1; }
+}
+
+@keyframes live-signal-rail {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+@keyframes live-dot-pulse {
+  from {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--live) 12%, transparent);
+    transform: scale(0.88);
+  }
+  to {
+    box-shadow: 0 0 0 6px color-mix(in srgb, var(--live) 18%, transparent);
+    transform: scale(1.08);
+  }
 }
 
 .empty-card {
