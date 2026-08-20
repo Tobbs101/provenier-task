@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { ConnectionIndicator } from "@/components/socket/connection-indicator";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 export function SiteHeader() {
@@ -14,6 +15,7 @@ export function SiteHeader() {
           <Link className="active-nav" href="/">Matches</Link>
         </nav>
         <div className="header-actions">
+          <ConnectionIndicator />
           <ThemeToggle />
         </div>
       </div>

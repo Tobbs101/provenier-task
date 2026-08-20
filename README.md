@@ -28,7 +28,7 @@ yarn typecheck  # run TypeScript without emitting files
 
 The browser accesses the football REST API through allowlisted, same-origin route handlers under `/api`. The upstream URL is server-only and can be configured with `PROFOOTBALL_API_URL`. Proxy responses are not cached so live match state cannot become stale.
 
-Real-time match updates and chat will be provided through Socket.IO. The final transport configuration will account for the WebSocket capabilities of the selected deployment platform.
+Real-time match updates use one managed Socket.IO connection. The client subscribes only to the matches currently on the dashboard, cleans those subscriptions up when they change, and restores canonical REST state after reconnecting. Configure the public WebSocket endpoint with `NEXT_PUBLIC_PROFOOTBALL_SOCKET_URL`; unlike REST calls, the browser must know this address to establish the persistent connection required by the assessment.
 
 ## Design foundation
 
