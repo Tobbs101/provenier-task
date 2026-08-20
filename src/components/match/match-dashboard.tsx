@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import gsap from "gsap";
 
@@ -81,15 +82,11 @@ export function MatchDashboard() {
       <section className="hero-shell">
         <div className="page-container hero-grid">
           <div className="hero-copy">
-            <p className="eyebrow">
-              <span className="live-dot" aria-hidden="true" />
-              The game, as it happens
-            </p>
             <h1>Every moment.<br />One match center.</h1>
             <p className="hero-description">
               Follow live scores, pivotal events, match statistics, and the conversation around every game.
             </p>
-            <a className="primary-action" href="#matches">
+            <a className="primary-action font-medium" href="#matches">
               Explore live matches
               <span aria-hidden="true">↘</span>
             </a>
@@ -114,7 +111,12 @@ export function MatchDashboard() {
               </div>
             )}
             {status === "success" && previewMatches.map((match) => (
-              <div className="preview-match" key={match.id}>
+              <Link
+                className="preview-match"
+                href={`/matches/${match.id}`}
+                key={match.id}
+                aria-label={`Open ${match.homeTeam.name} versus ${match.awayTeam.name} match center`}
+              >
                 <div className={`preview-status${isLiveMatch(match) ? " preview-status--live" : ""}`}>
                   {isLiveMatch(match) && <span className="live-dot" aria-hidden="true" />}
                   {getClockLabel(match)}
@@ -127,7 +129,7 @@ export function MatchDashboard() {
                   <span>{match.awayTeam.shortName}</span>
                   <strong>{match.status === "NOT_STARTED" ? "—" : match.awayScore}</strong>
                 </div>
-              </div>
+              </Link>
             ))}
             <p className="preview-note">Scores update from the protected ProFootball feed.</p>
           </div>
@@ -140,9 +142,6 @@ export function MatchDashboard() {
             <p className="section-kicker">Match center</p>
             <h2 id="matches-title">Today&apos;s fixtures</h2>
           </div>
-          {status === "success" && (
-            <p className="fixture-total"><strong>{matches.length}</strong> matches on the board</p>
-          )}
         </div>
 
         <div className="filter-row" aria-label="Filter matches">

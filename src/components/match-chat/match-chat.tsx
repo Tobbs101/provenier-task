@@ -48,8 +48,10 @@ export function MatchChat({ matchId }: { matchId: string }) {
   }, [isCollapsed]);
 
   useEffect(() => {
-    messagesEnd.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-  }, [chat.messages.length]);
+    if (!isCollapsed) {
+      messagesEnd.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [chat.messages.length, isCollapsed]);
 
   function handleIdentitySubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -86,7 +88,7 @@ export function MatchChat({ matchId }: { matchId: string }) {
 
   return (
     <section
-      className={`detail-panel chat-panel${isCollapsed ? " chat-panel--collapsed" : ""}`}
+      className={`${isCollapsed ? 'detail-panel-yellow' : 'detail-panel'} chat-panel${isCollapsed ? " chat-panel--collapsed" : ""}`}
       aria-labelledby="chat-heading"
       ref={panel}
     >
@@ -115,7 +117,6 @@ export function MatchChat({ matchId }: { matchId: string }) {
       <div className="chat-panel-body" id="match-chat-body" hidden={isCollapsed}>
         {!identity || isEditingIdentity ? (
           <form className="identity-form" onSubmit={handleIdentitySubmit}>
-            <span className="identity-symbol" aria-hidden="true">#</span>
             <h3>{identity ? "Change your display name" : "Join the conversation"}</h3>
             <p>Choose a name stored only in this browser.</p>
             <label htmlFor="chat-username">Display name</label>

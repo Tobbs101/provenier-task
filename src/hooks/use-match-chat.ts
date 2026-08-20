@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useSocket } from "@/components/providers/socket-provider";
 import type { ChatIdentity } from "@/hooks/use-chat-identity";
+import { getMatchChatHistory, saveChatMessage } from "@/lib/storage/chat-history";
 import type {
   ChatMessage,
   SocketError,
@@ -26,6 +27,22 @@ function isDuplicateMessage(messages: ChatMessage[], nextMessage: ChatMessage) {
   ));
 }
 
+function mergeMessages(currentMessages: ChatMessage[], nextMessages: ChatMessage[]) {
+  const messagesByKey = new Map<string, ChatMessage>();
+
+  [...currentMessages, ...nextMessages].forEach((message) => {
+    const key = [message.userId, message.timestamp, message.message].join(":");
+    messagesByKey.set(key, message);
+  });
+
+  return [...messagesByKey.values()].sort((left, right) => {
+    const leftTime = Date.parse(left.timestamp);
+    const rightTime = Date.parse(right.timestamp);
+    if (Number.isNaN(leftTime) || Number.isNaN(rightTime)) return 0;
+    return leftTime - rightTime;
+  });
+}
+
 export function useMatchChat({ matchId, identity }: UseMatchChatOptions) {
   const { socket, status } = useSocket();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -33,6 +50,20 @@ export function useMatchChat({ matchId, identity }: UseMatchChatOptions) {
   const [error, setError] = useState<string | null>(null);
   const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isTyping = useRef(false);
+
+  useEffect(() => {
+    let isActive = true;
+
+    void getMatchChatHistory(matchId).then((history) => {
+      if (isActive && history.length > 0) {
+        setMessages((currentMessages) => mergeMessages(currentMessages, history));
+      }
+    });
+
+    return () => {
+      isActive = false;
+    };
+  }, [matchId]);
 
   const stopTyping = useCallback(() => {
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
@@ -83,6 +114,7 @@ export function useMatchChat({ matchId, identity }: UseMatchChatOptions) {
           ? currentMessages
           : [...currentMessages, message]
       ));
+      void saveChatMessage(message);
     }
 
     function handleTyping(indicator: TypingIndicator) {

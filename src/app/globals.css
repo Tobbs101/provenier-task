@@ -336,11 +336,37 @@ a:focus-visible {
 }
 
 .preview-match {
+  position: relative;
   display: grid;
   grid-template-columns: 3.5rem 1fr;
   gap: 0.65rem 1rem;
   padding: 1.2rem 1.1rem;
   border-bottom: 1px solid var(--border);
+  transition: background-color 180ms ease;
+}
+
+.preview-match::after {
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--brand-yellow);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 320ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.preview-match:hover,
+.preview-match:focus-visible {
+  background: color-mix(in srgb, var(--brand-yellow) 5%, var(--surface));
+}
+
+.preview-match:hover::after,
+.preview-match:focus-visible::after {
+  transform: scaleX(1);
+  transform-origin: left;
 }
 
 .preview-status {
@@ -836,7 +862,7 @@ a:focus-visible {
   background: var(--surface-raised);
   box-shadow: inset 0 -4px 0 color-mix(in srgb, var(--brand-yellow) 65%, transparent);
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.85rem;
   letter-spacing: 0.08em;
 }
 
@@ -896,6 +922,11 @@ a:focus-visible {
 .detail-panel {
   border: 1px solid var(--border);
   background: var(--surface);
+}
+
+.detail-panel-yellow {
+  border: 1px solid var(--brand-yellow);
+  background:var(--surface);
 }
 
 .panel-heading {
@@ -1489,6 +1520,48 @@ a:focus-visible {
   color: #0d0d0d;
 }
 
+.expired-match-state {
+  position: relative;
+}
+
+.redirect-cue {
+  display: grid;
+  width: 4rem;
+  height: 4rem;
+  place-items: center;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--brand-yellow);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brand-yellow) 8%, transparent);
+  color: var(--brand-yellow-hover);
+  font-size: 1.35rem;
+  animation: redirect-cue-pulse 1s ease-in-out infinite alternate;
+}
+
+.redirect-status {
+  width: min(100%, 28rem);
+  margin-top: 1.5rem;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.redirect-progress {
+  display: block;
+  height: 0.2rem;
+  margin-top: 0.65rem;
+  overflow: hidden;
+  background: var(--border);
+}
+
+.redirect-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--brand-yellow);
+  transform-origin: left;
+  animation: redirect-progress 3s linear forwards;
+}
+
 .detail-loading {
   min-height: calc(100vh - 4.75rem);
   padding-block: 2rem 6rem;
@@ -1550,6 +1623,22 @@ a:focus-visible {
   to {
     box-shadow: 0 0 0 6px color-mix(in srgb, var(--live) 18%, transparent);
     transform: scale(1.08);
+  }
+}
+
+@keyframes redirect-progress {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@keyframes redirect-cue-pulse {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand-yellow) 16%, transparent);
+    transform: scale(0.96);
+  }
+  to {
+    box-shadow: 0 0 0 0.65rem color-mix(in srgb, var(--brand-yellow) 0%, transparent);
+    transform: scale(1);
   }
 }
 
