@@ -1,4 +1,13 @@
-import { MATCH_STATUSES, type Match, type MatchesResponse } from "@/types/match";
+import {
+  MATCH_EVENT_TYPES,
+  MATCH_STATUSES,
+  type Match,
+  type MatchDetails,
+  type MatchDetailsResponse,
+  type MatchesResponse,
+  type MatchEvent,
+  type TeamMetric,
+} from "@/types/match";
 
 export class ApiError extends Error {
   constructor(
@@ -38,6 +47,48 @@ function isMatch(value: unknown): value is Match {
   );
 }
 
+function isOptionalString(value: unknown) {
+  return value === undefined || typeof value === "string";
+}
+
+function isMatchEvent(value: unknown): value is MatchEvent {
+  return (
+    isRecord(value) &&
+    typeof value.id === "string" &&
+    typeof value.type === "string" &&
+    MATCH_EVENT_TYPES.includes(value.type as MatchEvent["type"]) &&
+    typeof value.minute === "number" &&
+    (value.team === "home" || value.team === "away") &&
+    isOptionalString(value.player) &&
+    isOptionalString(value.assistPlayer) &&
+    typeof value.description === "string" &&
+    typeof value.timestamp === "string"
+  );
+}
+
+function isTeamMetric(value: unknown): value is TeamMetric {
+  return isRecord(value) && typeof value.home === "number" && typeof value.away === "number";
+}
+
+function isMatchDetails(value: unknown): value is MatchDetails {
+  if (!isMatch(value)) return false;
+
+  const candidate = value as Match & { events?: unknown; statistics?: unknown };
+
+  return (
+    Array.isArray(candidate.events) &&
+    candidate.events.every(isMatchEvent) &&
+    isRecord(candidate.statistics) &&
+    isTeamMetric(candidate.statistics.possession) &&
+    isTeamMetric(candidate.statistics.shots) &&
+    isTeamMetric(candidate.statistics.shotsOnTarget) &&
+    isTeamMetric(candidate.statistics.corners) &&
+    isTeamMetric(candidate.statistics.fouls) &&
+    isTeamMetric(candidate.statistics.yellowCards) &&
+    isTeamMetric(candidate.statistics.redCards)
+  );
+}
+
 function isMatchesResponse(value: unknown): value is MatchesResponse {
   return (
     isRecord(value) &&
@@ -49,9 +100,16 @@ function isMatchesResponse(value: unknown): value is MatchesResponse {
   );
 }
 
+function isMatchDetailsResponse(value: unknown): value is MatchDetailsResponse {
+  return isRecord(value) && value.success === true && isMatchDetails(value.data);
+}
+
 function getErrorMessage(payload: unknown) {
   if (!isRecord(payload)) return null;
   if (typeof payload.error === "string") return payload.error;
+  if (isRecord(payload.error) && typeof payload.error.message === "string") {
+    return payload.error.message;
+  }
   if (typeof payload.message === "string") return payload.message;
   return null;
 }
@@ -77,4 +135,27 @@ export async function getMatches(signal?: AbortSignal): Promise<Match[]> {
   }
 
   return payload.data.matches;
+}
+
+export async function getMatchDetails(matchId: string, signal?: AbortSignal): Promise<MatchDetails> {
+  const response = await fetch(`/api/matches/${encodeURIComponent(matchId)}`, {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+    signal,
+  });
+
+  const payload: unknown = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new ApiError(
+      getErrorMessage(payload) ?? "We could not load this match right now.",
+      response.status,
+    );
+  }
+
+  if (!isMatchDetailsResponse(payload)) {
+    throw new ApiError("The match service returned unexpected match details.", 502);
+  }
+
+  return payload.data;
 }
