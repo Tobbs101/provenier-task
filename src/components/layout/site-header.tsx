@@ -14,10 +14,6 @@ export function SiteHeader() {
           <Link className="active-nav" href="/">Matches</Link>
         </nav>
         <div className="header-actions">
-          <span className="connection-pill">
-            <span className="connection-dot" aria-hidden="true" />
-            API ready
-          </span>
           <ThemeToggle />
         </div>
       </div>
