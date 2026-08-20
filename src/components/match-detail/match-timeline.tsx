@@ -18,10 +18,23 @@ const eventMeta: Record<MatchEventType, { icon: string; label: string }> = {
 export function MatchTimeline({ events }: { events: MatchEvent[] }) {
   const timeline = useRef<HTMLElement | null>(null);
   const knownEventIds = useRef<Set<string>>(new Set());
-  const orderedEvents = useMemo(() => [...events].sort((left, right) => {
-    if (right.minute !== left.minute) return right.minute - left.minute;
-    return new Date(right.timestamp).getTime() - new Date(left.timestamp).getTime();
-  }), [events]);
+  const orderedEvents = useMemo(() => events
+    .map((event, arrivalIndex) => ({ event, arrivalIndex }))
+    .sort((left, right) => {
+      if (right.event.minute !== left.event.minute) {
+        return right.event.minute - left.event.minute;
+      }
+
+      const leftTimestamp = Date.parse(left.event.timestamp);
+      const rightTimestamp = Date.parse(right.event.timestamp);
+      if (Number.isFinite(leftTimestamp) && Number.isFinite(rightTimestamp)) {
+        const timestampDifference = rightTimestamp - leftTimestamp;
+        if (timestampDifference !== 0) return timestampDifference;
+      }
+
+      return right.arrivalIndex - left.arrivalIndex;
+    })
+    .map(({ event }) => event), [events]);
   const eventIds = orderedEvents.map(({ id }) => id).join(",");
 
   useEffect(() => {
