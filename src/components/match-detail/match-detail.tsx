@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { MatchChat } from "@/components/match-chat/match-chat";
 import { MatchScoreboard } from "@/components/match-detail/match-scoreboard";
 import { MatchStatistics } from "@/components/match-detail/match-statistics";
 import { MatchTimeline } from "@/components/match-detail/match-timeline";
@@ -34,6 +35,7 @@ export function MatchDetail({ matchId }: { matchId: string }) {
         <MatchTimeline events={match.events} />
         <MatchStatistics statistics={match.statistics} />
       </div>
+      <MatchChat matchId={match.id} />
     </main>
   );
 }
